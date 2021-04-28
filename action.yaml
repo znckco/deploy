@@ -1,0 +1,38 @@
+name: "Deployer"
+description: "A simple SSH deployment tool"
+runs:
+  using: node12
+  main: lib/action.js
+inputs:
+  deploy_config:
+    description: Configuration file
+    default: deploy.json
+    required: false
+  app:
+    description: Name of app deployed on server
+    required: true
+  action:
+    description: Command name
+    required: true
+  tag:
+    description: Release tag, required by "create-release" command
+    required: false
+  artefact:
+    description: Release artefact, required by "create-release" command
+    required: false
+  commit:
+    description: Commit SHA, required by "create-release" command
+    required: false
+  instance_id:
+    description: Instance ID, required by "destroy-instance" and "promote-instance" commands
+    required: false
+outputs:
+  instance_id:
+    description: Instance ID, set by "create-instance" command
+  preview_url:
+    description: Instance preview URL, set by "create-instance" command
+  release_id:
+    description: Release ID, set by "create-release" command
+branding:
+  color: green
+  icon: upload-cloud
