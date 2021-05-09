@@ -23,6 +23,9 @@ inputs:
   commit:
     description: Commit SHA, required by "create-release" command
     required: false
+  release_id:
+    description: Release ID, required by "release-instance" command
+    required: false
   instance_id:
     description: Instance ID, required by "destroy-instance" and "promote-instance" commands
     required: false
