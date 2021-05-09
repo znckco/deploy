@@ -7,7 +7,7 @@ import * as Util from "util";
 import { AppInstance } from "./AppInstance";
 import { AppManifest } from "./AppManifest";
 import { DeploymentHistoryItem } from "./DeploymentHistoryItem";
-import { areObjectsEqual, Exception, getCreatedAt, quote, uuid } from "./helpers";
+import { areObjectsEqual, Exception, getCreatedAt, importJSON, quote, uuid } from "./helpers";
 import { AppInstanceId, ReleaseId } from "./Id";
 import { Release } from "./Release";
 import { SSHClient } from "./SSHClient";
@@ -71,15 +71,9 @@ export class AppManager {
         throw new Exception("InvalidArchive", stderr);
       }
     } else if (stat.isDirectory()) {
-      assetFilename = Path.join(await FS.promises.mkdtemp(Path.join(OS.tmpdir(), "deployer-")), "archive.tar.gz");
-      shouldUnlinkAssetFile = true;
-      const ignoreFiles = [
-        Path.resolve(asset, ".deployignore"),
-        Path.resolve(process.cwd(), ".deployignore"),
-      ].filter((file) => FS.existsSync(file));
-
-      const extraArgs = ignoreFiles.map((file) => `--exclude-from=${quote(file)}`).join(" ");
-      const cmd = `tar -c ${extraArgs} -zf ${quote(assetFilename)} .`;
+      const pkg = await importJSON<{ name: string; version: string }>(Path.resolve(asset, "package.json"));
+      assetFilename = Path.resolve(asset, `${pkg.name}-${pkg.version}.tgz`.replace("@", "").replace("/", "-"));
+      const cmd = `npm pack`;
       console.log(chalk.gray(chalk.bold("Execute (localhost): "), cmd));
       const { stderr } = await Util.promisify(CP.exec)(cmd, {
         env: { ...process.env, COPYFILE_DISABLE: "true" },
