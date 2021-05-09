@@ -1,8 +1,8 @@
 name: "Deployer"
 description: "A simple SSH deployment tool"
 runs:
-  using: node12
-  main: lib/action.js
+  using: docker
+  image: Dockerfile
 inputs:
   deploy_config:
     description: Configuration file
