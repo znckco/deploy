@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import * as FileSystem from "fs";
 import * as CP from "child_process";
 import * as Util from "util";
 import { Exception, FileNotFoundException, quote } from "./helpers";
@@ -14,6 +15,11 @@ export class SSHClient {
       appsDirectory: "/apps",
       ...server,
     };
+
+    if (process.env.DEPLOYER_SSH_KEY != null) {
+      this.server.privateKey = "/tmp/deployer.pem";
+      FileSystem.writeFileSync(this.server.privateKey, process.env.DEPLOYER_SSH_KEY);
+    }
   }
 
   async ls(expr: string): Promise<string[]> {
@@ -60,9 +66,9 @@ export class SSHClient {
   async upload(localFile: string, remoteFile: string): Promise<void> {
     try {
       const { stdout, stderr } = await Util.promisify(CP.exec)(
-        `scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(this.server.privateKey)} -P ${this.server.port} ${quote(localFile)} ${this.server.user}@${
-          this.server.host
-        }:${quote(remoteFile)}`,
+        `scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(this.server.privateKey)} -P ${
+          this.server.port
+        } ${quote(localFile)} ${this.server.user}@${this.server.host}:${quote(remoteFile)}`,
       );
       if (stderr !== "") console.error(chalk.red(stderr));
       if (stdout !== "") console.log(chalk.gray(stdout));
@@ -77,9 +83,9 @@ export class SSHClient {
       const boundary = `END_OF_SCRIPT_${Date.now()}`;
       const outputBoundary = `-------------SSH-OUTPUT-----`;
       const { stdout, stderr } = await Util.promisify(CP.exec)(
-        `ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(this.server.privateKey)} -p ${this.server.port} ${
-          this.server.user
-        }@${this.server.host} <<'${boundary}'\n` +
+        `ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(this.server.privateKey)} -p ${
+          this.server.port
+        } ${this.server.user}@${this.server.host} <<'${boundary}'\n` +
           `echo ${quote(outputBoundary)};\n` +
           script +
           "\n" +
