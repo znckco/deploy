@@ -166,8 +166,16 @@ export class AppManager {
     return this.app.deployments.current.find((instance) => instance.id === instanceId);
   }
 
+  async getInstancesByReleaseId(releaseId: ReleaseId): Promise<AppInstance[]> {
+    return this.app.deployments.current.filter((instance) => instance.releaseId === releaseId);
+  }
+
   async getRelease(releaseId: ReleaseId): Promise<Release | undefined> {
     return this.app.releases.find((release) => release.id === releaseId);
+  }
+
+  async getReleasesByTag(tag: string): Promise<Release[]> {
+    return this.app.releases.filter((release) => release.tag === tag);
   }
 
   async current(): Promise<AppInstance | undefined> {

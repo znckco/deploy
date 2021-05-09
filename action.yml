@@ -14,9 +14,6 @@ inputs:
   action:
     description: Command name
     required: true
-  tag:
-    description: Release tag, required by "create-release" command
-    required: false
   artefact:
     description: Release artefact, required by "create-release" command
     required: false

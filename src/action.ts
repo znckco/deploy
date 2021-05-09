@@ -42,7 +42,9 @@ function getCommand(): CreateInstanceCommand | CreateReleaseCommand | PromoteIns
         action,
         app: Action.getInput("app", { required: true }),
         commit: Action.getInput("commit") ?? GitHub.context.sha,
-        tag: Action.getInput("tag") ?? "latest",
+        tag:
+          // FIXME: add support for main branch in deploy.json
+          /^refs\/heads\/(master|main)$/.test(GitHub.context.ref) ? "production" : `preview:${GitHub.context.ref}`,
         artefact: Action.getInput("artefact") ?? process.cwd(),
       };
     case "create-instance":
@@ -75,6 +77,20 @@ async function main(): Promise<void> {
   switch (command.action) {
     case "create-release": {
       const app = await server.connect(command.app);
+      const previousReleases = await app.getReleasesByTag(command.tag);
+
+      // Delete previous release if it's preview build.
+      if (command.tag.startsWith("preview:") && previousReleases.length > 0) {
+        for (const release of previousReleases) {
+          const instances = await app.getInstancesByReleaseId(release.id);
+          for (const instance of instances) {
+            await app.destroyInstance(instance.id);
+          }
+
+          await app.destroyRelease(release.id);
+        }
+      }
+
       const release = await app.createRelease(command, command.artefact);
 
       Action.info(`Created release v${release.id} from ${release.commit} (tag: ${release.tag}).`);
