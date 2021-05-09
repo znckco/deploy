@@ -60,7 +60,7 @@ export class SSHClient {
   async upload(localFile: string, remoteFile: string): Promise<void> {
     try {
       const { stdout, stderr } = await Util.promisify(CP.exec)(
-        `scp -q -i ${quote(this.server.privateKey)} -P ${this.server.port} ${quote(localFile)} ${this.server.user}@${
+        `scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(this.server.privateKey)} -P ${this.server.port} ${quote(localFile)} ${this.server.user}@${
           this.server.host
         }:${quote(remoteFile)}`,
       );
@@ -77,9 +77,9 @@ export class SSHClient {
       const boundary = `END_OF_SCRIPT_${Date.now()}`;
       const outputBoundary = `-------------SSH-OUTPUT-----`;
       const { stdout, stderr } = await Util.promisify(CP.exec)(
-        `ssh -q -i ${quote(this.server.privateKey)} -p ${this.server.port} ${this.server.user}@${
-          this.server.host
-        } <<'${boundary}'\n` +
+        `ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(this.server.privateKey)} -p ${this.server.port} ${
+          this.server.user
+        }@${this.server.host} <<'${boundary}'\n` +
           `echo ${quote(outputBoundary)};\n` +
           script +
           "\n" +
