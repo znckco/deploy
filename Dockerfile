@@ -6,7 +6,6 @@ RUN apk update \
   ca-certificates \
   bash
 
-ADD lib/ /deployer
-WORKDIR /deployer
+ADD lib/ /znckco/deployer
 
-ENTRYPOINT [ "node", "action.js" ]
+ENTRYPOINT [ "node", "/znckco/deployer/action.js" ]
