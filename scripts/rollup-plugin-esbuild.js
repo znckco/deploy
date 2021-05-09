@@ -19,7 +19,7 @@ export default function createESBuildPlugin(config) {
 
       const fileNames = Object.keys(chunks);
       const filter = new RegExp(
-        `^(${fileNames.map((fileName) => fileName.replace(/[\|\+\*\^\$\.]/g, (ch) => `\\${ch}`)).join("|")})$`,
+        `^(${fileNames.map((fileName) => fileName.replace(/[|+*^$.]/g, (ch) => `\\${ch}`)).join("|")})$`,
       );
 
       const output = await build({
