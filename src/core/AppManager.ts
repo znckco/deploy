@@ -224,7 +224,7 @@ export class AppManager {
       const supervisorConfig =
         [
           `[program:${this.app.name}-${id}]`,
-          `directory=${directory}`,
+          `directory=${directory}/package`,
           `command=bash -c "set -a; source ${this.appDir}/.env; set +a; n auto; npm start"`,
           `stderr_logfile=${logs}`,
           `stdout_logfile=${errors}`,
