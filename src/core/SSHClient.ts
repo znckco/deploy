@@ -7,6 +7,8 @@ import { HostConfig } from "./HostConfig";
 
 export class SSHClient {
   private readonly server: Required<HostConfig>;
+  private readonly binSSH = process.env.SSH_BIN_PATH ?? "/usr/bin/ssh";
+  private readonly binSCP = process.env.SCP_BIN_PATH ?? "/usr/bin/scp";
   constructor(server: HostConfig) {
     this.server = {
       port: 22,
@@ -66,9 +68,9 @@ export class SSHClient {
   async upload(localFile: string, remoteFile: string): Promise<void> {
     try {
       const { stdout, stderr } = await Util.promisify(CP.exec)(
-        `scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(this.server.privateKey)} -P ${
-          this.server.port
-        } ${quote(localFile)} ${this.server.user}@${this.server.host}:${quote(remoteFile)}`,
+        `${this.binSCP} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(
+          this.server.privateKey,
+        )} -P ${this.server.port} ${quote(localFile)} ${this.server.user}@${this.server.host}:${quote(remoteFile)}`,
       );
       if (stderr !== "") console.error(chalk.red(stderr));
       if (stdout !== "") console.log(chalk.gray(stdout));
@@ -83,9 +85,9 @@ export class SSHClient {
       const boundary = `END_OF_SCRIPT_${Date.now()}`;
       const outputBoundary = `-------------SSH-OUTPUT-----`;
       const { stdout, stderr } = await Util.promisify(CP.exec)(
-        `ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(this.server.privateKey)} -p ${
-          this.server.port
-        } ${this.server.user}@${this.server.host} <<'${boundary}'\n` +
+        `${this.binSSH} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i ${quote(
+          this.server.privateKey,
+        )} -p ${this.server.port} ${this.server.user}@${this.server.host} <<'${boundary}'\n` +
           `echo ${quote(outputBoundary)};\n` +
           script +
           "\n" +
