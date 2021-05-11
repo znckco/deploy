@@ -1,5 +1,7 @@
 import chalk from "chalk";
+import * as OS from "os";
 import * as FileSystem from "fs";
+import * as Path from "path";
 import * as CP from "child_process";
 import * as Util from "util";
 import { Exception, FileNotFoundException, quote } from "./helpers";
@@ -19,8 +21,9 @@ export class SSHClient {
     };
 
     if (process.env.DEPLOYER_SSH_KEY != null) {
-      this.server.privateKey = "/tmp/deployer.pem";
-      FileSystem.writeFileSync(this.server.privateKey, process.env.DEPLOYER_SSH_KEY);
+      this.server.privateKey = Path.resolve(OS.tmpdir(), "deployer", Date.now() + ".pem");
+      FileSystem.mkdirSync(Path.dirname(this.server.privateKey), { recursive: true });
+      FileSystem.writeFileSync(this.server.privateKey, process.env.DEPLOYER_SSH_KEY, { mode: 0o600, encoding: "utf8" });
     }
   }
 
