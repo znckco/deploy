@@ -114,26 +114,29 @@ export class AppManager {
     });
   }
 
-  async setEnv(key: string, value: string): Promise<void> {
-    return this.withManifestSync(async () => {
-      if (!/^[a-z][a-z0-9_]*$/.test(key))
+  async setEnv(env: Record<string, string>): Promise<void> {
+    Object.keys(env).forEach((key) => {
+      if (!/^[a-z][a-z0-9_]*$/i.test(key))
         throw new Exception(
           "InvalidEnvironmentVariableName",
           `Invalid characters in environment variable name: ${key}`,
         );
-      await this.sh.exec(
-        [
-          `sed -i ${quote(`/^${key}=.*$//g`)} ${this.appDir}/.env`,
-          `echo ${quote(`${key}=${quote(value)}\n`)} >> ${this.appDir}/.env`,
-        ].join("\n"),
-      );
+    });
 
-      if (!this.app.env.includes(key)) {
-        this.app.env.push(key);
-        this.log(`Set environment variables ${quote(key)}`);
-      } else {
-        this.log(`Update environment variables ${quote(key)}`);
-      }
+    return this.withManifestSync(async () => {
+      this.app.env = Array.from(new Set([...this.app.env, ...Object.keys(env)]));
+      await this.sh.exec(
+        Object.entries(env)
+          .map(([key, value]) => {
+            return (
+              `sed -i ${quote(`s/^${key}=.*$//g`)} ${this.appDir}/.env` +
+              `sed -i 's/^$/d' ${this.appDir}/.env` +
+              "\n" +
+              `echo ${key}=${quote(value)} >> ${this.appDir}/.env`
+            );
+          })
+          .join("\n"),
+      );
     });
   }
 

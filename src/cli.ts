@@ -111,62 +111,54 @@ export async function cli(args: string[]): Promise<void> {
     .command("create-app", "create a new app", {
       builder: {},
       handler: async () => {
-        const {
-          name,
-          domain,
-          email,
-          domainAliases,
-          repository,
-          healthcheck,
-          maxReleases,
-          maxDeploymentHistory,
-        } = await prompts.default([
-          {
-            type: "text",
-            name: "name",
-            message: "Short app name",
-          },
-          {
-            type: "text",
-            name: "domain",
-            message: "Primary application domain",
-          },
-          {
-            type: "text",
-            name: "email",
-            message: "Email address for SSL certificate notifications",
-          },
-          {
-            type: "list",
-            name: "domainAliases",
-            message: "Other domains",
-          },
-          {
-            type: "text",
-            name: "repository",
-            message: "GitHub repository",
-          },
-          {
-            type: "text",
-            name: "healthcheck",
-            message: "Healthcheck URL",
-            initial: 'curl -sSf "http://localhost:${PORT}/health"',
-          },
-          {
-            type: "number",
-            name: "maxReleases",
-            message: "Max number of releases to keep",
-            increment: 1,
-            initial: 5,
-          },
-          {
-            type: "number",
-            name: "maxDeploymentHistory",
-            message: "Max deployment history to keep",
-            increment: 1,
-            initial: 100,
-          },
-        ]);
+        const { name, domain, email, domainAliases, repository, healthcheck, maxReleases, maxDeploymentHistory } =
+          await prompts.default([
+            {
+              type: "text",
+              name: "name",
+              message: "Short app name",
+            },
+            {
+              type: "text",
+              name: "domain",
+              message: "Primary application domain",
+            },
+            {
+              type: "text",
+              name: "email",
+              message: "Email address for SSL certificate notifications",
+            },
+            {
+              type: "list",
+              name: "domainAliases",
+              message: "Other domains",
+            },
+            {
+              type: "text",
+              name: "repository",
+              message: "GitHub repository",
+            },
+            {
+              type: "text",
+              name: "healthcheck",
+              message: "Healthcheck URL",
+              initial: 'curl -sSf "http://localhost:${PORT}/health"',
+            },
+            {
+              type: "number",
+              name: "maxReleases",
+              message: "Max number of releases to keep",
+              increment: 1,
+              initial: 5,
+            },
+            {
+              type: "number",
+              name: "maxDeploymentHistory",
+              message: "Max deployment history to keep",
+              increment: 1,
+              initial: 100,
+            },
+          ]);
 
         const app = await deployer.create({
           name,
@@ -188,7 +180,6 @@ export async function cli(args: string[]): Promise<void> {
         );
       },
     })
-
     .command<{ app: string; commit: string; tag: string; artefact: string }>(
       "create-release [artefact]",
       "create a new release",
@@ -215,7 +206,6 @@ export async function cli(args: string[]): Promise<void> {
         },
       },
     )
-
     .command<{ app: string; id: ReleaseId }>("create-instance <id>", "create an instance of a release", {
       builder: (yargs) =>
         yargs
@@ -238,7 +228,6 @@ export async function cli(args: string[]): Promise<void> {
         console.log(`Instance URL: ${chalk.green(instance.preview)}`);
       },
     })
-
     .command<{ app: string; id: AppInstanceId }>(
       "promote-instance <id>",
       "promote an instance of a release to production",
@@ -271,6 +260,37 @@ export async function cli(args: string[]): Promise<void> {
         },
       },
     )
+    .command<{ app: string }>("env", "set environment variables", {
+      builder: (yargs) =>
+        yargs.option("app", {
+          alias: ["a"],
+          default: process.env.DEPLOYER_APP,
+          demandOption: true,
+          description: "App name",
+        }) as any,
+      handler: async ({ _: args, app }) => {
+        const manager = await deployer.connect(app);
+        if (args[0] === "env") args.shift();
+        if (args.length === 0) {
+          console.log(`Current environment variables:\n - ${manager.app.env.join("\n - ")}`);
+        } else {
+          const envs = Object.fromEntries(
+            args
+              .filter((arg): arg is string => typeof arg === "string")
+              .map((arg) => {
+                const index = arg.indexOf("=");
+                if (index >= 0) {
+                  return [arg.substr(0, index), arg.substr(index + 1)] as const;
+                } else {
+                  return [arg, "true"] as const;
+                }
+              }),
+          );
+
+          await manager.setEnv(envs);
+        }
+      },
+    })
     .command<{ app: string; id: AppInstanceId }>("delete-instance <id>", "delete an instance of a release", {
       builder: (yargs) =>
         yargs
@@ -299,7 +319,6 @@ export async function cli(args: string[]): Promise<void> {
         console.log(chalk.gray(`Done.`));
       },
     })
-
     .command<{ app: string; id: ReleaseId }>("delete-release <id>", "delete a release", {
       builder: (yargs) =>
         yargs

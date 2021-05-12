@@ -20,6 +20,7 @@ const configs = [
           platform: "node",
           target: `node14.14`,
           bundle: true,
+          treeShaking: true,
           external: [],
         }),
       ],
