@@ -208,7 +208,7 @@ export class AppManager {
         [
           `[program:${this.app.name}-${id}]`,
           `directory=${directory}/package`,
-          `command=bash -c "set -a; source ${this.appDir}/.env; set +a; n auto; npm install --prod; npm start"`,
+          `command=bash -c "set -a; source ${this.appDir}/.env; set +a; n auto; npm start"`,
           `stderr_logfile=${logs}`,
           `stdout_logfile=${errors}`,
           `user=appuser`,
@@ -261,6 +261,7 @@ export class AppManager {
           `mkdir -p ${quote(Path.dirname(logs))}`,
           `mkdir -p ${quote(directory)}`,
           `tar -zxf ${quote(artefact)} -C ${quote(directory)}`,
+          `cd ${quote(directory)}/package; npm install --prod --ignore-scripts; cd -`,
           `cat <<- 'EOF' > ${quote(supervisorFile)}\n${supervisorConfig}\nEOF\n`,
           `cat <<- 'EOF' > ${quote(nginxFile)}\n${nginxConfig}\nEOF\n`,
           `supervisorctl reread`,
