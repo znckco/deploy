@@ -41,7 +41,7 @@ function getCommand(): CreateInstanceCommand | CreateReleaseCommand | PromoteIns
       return {
         action,
         app: Action.getInput("app", { required: true }),
-        commit: Action.getInput("commit") ?? GitHub.context.sha,
+        commit: GitHub.context.sha,
         tag:
           // FIXME: add support for main branch in deploy.json
           /^refs\/heads\/(master|main)$/.test(GitHub.context.ref) ? "production" : `preview:${GitHub.context.ref}`,

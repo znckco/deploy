@@ -17,9 +17,6 @@ inputs:
   artefact:
     description: Release artefact, required by "create-release" command
     required: false
-  commit:
-    description: Commit SHA, required by "create-release" command
-    required: false
   release_id:
     description: Release ID, required by "release-instance" command
     required: false
