@@ -208,7 +208,7 @@ export class AppManager {
         [
           `[program:${this.app.name}-${id}]`,
           `directory=${directory}/package`,
-          `command=bash -c "set -a; source ${this.appDir}/.env; set +a; n auto; npm start"`,
+          `command=bash -c "set -a; source ${this.appDir}/.env; set +a; n auto; npm install --prod; npm start"`,
           `stderr_logfile=${logs}`,
           `stdout_logfile=${errors}`,
           `user=appuser`,
