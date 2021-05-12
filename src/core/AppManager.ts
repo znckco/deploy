@@ -57,7 +57,7 @@ export class AppManager {
       )} ${wildCard ? `-d ${quote(`*.${domain}`)}` : ""};`;
 
     await this.sh.exec(
-      [certbot(this.app.domain.primary), this.app.domain.aliases.map((alias) => certbot(alias))].join("\n"),
+      [certbot(this.app.domain.primary), ...this.app.domain.aliases.map((alias) => certbot(alias))].join("\n"),
     );
   }
 
