@@ -101,27 +101,6 @@ export class AppManager {
         `Create release v${release.id} from ${this.app.repository}/commit/${release.commit} (version: ${release.tag})`,
       );
       this.app.releases.unshift(release);
-      const keepReleases = this.app.releases.slice(0, this.app.config.maxReleases);
-      const activeReleaseIds = new Set(this.app.deployments.current.map((instance) => instance.releaseId));
-
-      const deleteReleases = new Set<ReleaseId>();
-
-      keepReleases.forEach((release) => activeReleaseIds.delete(release.id));
-
-      this.app.releases.forEach((release) => {
-        if (activeReleaseIds.has(release.id)) {
-          keepReleases.push(release);
-        } else {
-          deleteReleases.add(release.id);
-        }
-      });
-
-      // TODO: Do explicit cleanup.
-      await this.sh.exec(
-        `rm -f ${Array.from(deleteReleases).map((id) => quote(`${this.appDir}/releases/v${id}.tar.gz`))}`,
-      );
-
-      this.app.releases = keepReleases;
 
       return release;
     });
