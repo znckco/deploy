@@ -62,6 +62,7 @@ export class AppManager {
   }
 
   async createRelease(options: Pick<Release, "commit" | "tag">, asset: string): Promise<Release> {
+    if (!Path.isAbsolute(asset)) asset = Path.resolve(process.cwd(), asset);
     const stat = await FS.promises.stat(asset);
     let assetFilename = asset;
     let shouldUnlinkAssetFile = false;
